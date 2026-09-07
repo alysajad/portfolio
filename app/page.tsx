@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ArrowDown, ArrowRight, ArrowUpRight, Braces, Check, ChevronRight, CircleDot, Clock3, Code2, Cpu, Database, Fingerprint, GitBranch, Github, Globe, Linkedin, Mail, MapPin, Network, Phone, Server, ShieldCheck, Terminal, Trophy, type LucideIcon } from "lucide-react";
 import { certifications, experience, profile, projects, pursuing, skills } from "./content";
 import Reveal from "./reveal";
+import ScrollExperience from "./scroll-experience";
 
 const quickStack = ["Python", "FastAPI", "PostgreSQL", "Redis", "Next.js", "TypeScript", "Docker", "Linux", "Wazuh", "Kali Linux", "SQLAlchemy", "MongoDB"];
 const capabilities = [
@@ -24,8 +25,10 @@ function Ghost({ number }: { number: string }) {
 }
 
 function Portrait({ hero = false }: { hero?: boolean }) {
+  const sizes = `${hero ? "(max-width: 639px) 44vw" : "(max-width: 639px) 280px"}, (max-width: 800px) 215px, (max-width: 1100px) 260px, 300px`;
   return <div className="portrait-frame">
-    <Image src="/images/sajad-portrait.png" alt="Sajad Hussain Malla, arms crossed, in black and white against an amber panel" width={1122} height={1402} sizes={`${hero ? "(max-width: 639px) 44vw" : "(max-width: 639px) 280px"}, (max-width: 800px) 215px, (max-width: 1100px) 260px, 300px`} preload={hero} />
+    <Image src="/images/sajad-portrait.png" alt="Sajad Hussain Malla, arms crossed against an amber panel" width={1122} height={1402} sizes={sizes} preload={hero} />
+    <Image className="portrait-color" src="/images/sajad-portrait-color.png" alt="" aria-hidden="true" fill sizes={sizes} loading={hero ? "eager" : "lazy"} />
   </div>;
 }
 
@@ -36,16 +39,17 @@ function ContactLink({ icon: Icon, href, children, external = false }: { icon: L
 export default function Home() {
   return <>
     <a className="skip-link" href="#about">Skip to portfolio content</a>
-    <aside className="vertical-label" aria-hidden="true">SAJAD © 2026</aside>
+    <ScrollExperience />
+    <aside className="vertical-label" aria-hidden="true">SAJAD ©</aside>
     <main className="page-shell">
       <section className="hero section" id="hero" aria-labelledby="hero-title">
-        <div className="hero-top"><a href="#hero" className="brand-mark" aria-label="Sajad Hussain Malla home"><span /><span /></a><span className="eyebrow">BACKEND / SECURITY / AI</span><span className="hero-year">PORTFOLIO · 2026</span></div>
+        <div className="hero-top"><a href="#hero" className="brand-mark" aria-label="Sajad Hussain Malla home"><span /><span /></a><span className="eyebrow">BACKEND / SECURITY / AI</span><span className="hero-year">PORTFOLIO</span></div>
         <div className="hero-composition">
           <div className="doodles" aria-hidden="true"><Terminal className="doodle d1" /><Braces className="doodle d2" /><ShieldCheck className="doodle d3" /><Server className="doodle d4" /><GitBranch className="doodle d5" /><Network className="doodle d6" /></div>
           <div className="hero-type"><span className="hero-quote" aria-hidden="true">“</span><h1 id="hero-title"><span className="hero-line first-line">BACKEND<span className="period">.</span></span><span className="ribbon-label hero-ribbon">Backend Engineer</span><span className="hero-line second-line">ENGINEER<span className="period">.</span></span></h1><p className="hero-description">SWE Intern @ Nippon Toyota<br /><span>B.Tech CSE · CUSAT · Kochi, India</span></p></div>
           <div className="hero-portrait"><div className="portrait-orbit" aria-hidden="true" /><Portrait hero /><span className="ribbon-label winner-ribbon">Backend · Security · AI</span><span className="portrait-caption">Sajad Hussain Malla <span>aka Jin</span></span></div>
         </div>
-        <div className="hero-bottom"><a href="#about" className="name-link"><span className="outline-circle"><ArrowDown size={18} /></span>{profile.name}</a><span className="selected-note">Selected Best<br />Backend Build · 2026</span></div>
+        <div className="hero-bottom"><a href="#about" className="name-link"><span className="outline-circle"><ArrowDown size={18} /></span>{profile.name}</a><span className="selected-note">Selected Best<br />Backend Build</span></div>
         <Ghost number="01" />
       </section>
 
@@ -81,7 +85,7 @@ export default function Home() {
       <section className="section experience" id="experience" aria-labelledby="experience-title"><SectionHeader label="The journey" next="contact" nextLabel="contact" /><Title id="experience-title">EXPERIENCE<span className="amber">.</span></Title><ol className="timeline">{experience.map((job, index) => <li className="timeline-entry" key={job.role}><div className="timeline-date"><span>{job.date}</span><small>{job.end}</small></div><div className="timeline-content"><span className={`timeline-node ${index === 0 ? "active-node" : ""}`} aria-hidden="true" /><div className="timeline-title"><h3>{job.role}</h3>{job.active && <span className="current-tag">Current</span>}</div><p className="timeline-company">{job.company} · {job.location}</p><ul>{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul></div></li>)}</ol><div className="community"><h3 className="underline-title">Beyond the build</h3><div><p><strong>Volunteer / organiser</strong>Team Lead · Make-a-ton 8.0 · Dhishna Tech Fest · Sargam Cultural Fest · Vibhava CUSAT</p><p><strong>Off the clock</strong>CTFs · Football · Tinkering at Tinkerspace</p><p><strong>Languages</strong>English · Hindi · Urdu · Malayalam (conversational)</p></div></div><Ghost number="07" /></section>
 
       <section className="section contact" id="contact" aria-labelledby="contact-title"><SectionHeader label="Let’s work together" next="hero" nextLabel="the top" /><div className="contact-intro"><Title id="contact-title">LET’S<br />BUILD<span className="amber">.</span></Title><div><ArrowUpRight className="contact-big-arrow" size={76} strokeWidth={1} aria-hidden="true" /><p>I’m open to backend engineering roles, security research collaborations, and hackathons. Based in Kochi, open to remote.</p></div></div><div className="contact-grid"><div className="contact-card"><ContactLink icon={Mail} href={`mailto:${profile.email}`}>{profile.email}</ContactLink><ContactLink icon={Phone} href="tel:+919103321565">{profile.phone}</ContactLink><p className="location"><MapPin size={18} />Kochi, Kerala, India</p></div><div className="contact-card"><ContactLink icon={Linkedin} href={profile.linkedin} external>LinkedIn</ContactLink><ContactLink icon={Github} href={profile.github} external>GitHub</ContactLink><ContactLink icon={Globe} href={profile.website} external>Portfolio</ContactLink></div></div><Ghost number="08" /></section>
-      <footer><span>Sajad Hussain Malla · B.Tech CSE · CUSAT · 2026</span><span>Built with Next.js + Tailwind</span><a href="#hero" aria-label="Back to top"><ArrowRight size={18} className="footer-arrow" /></a></footer>
+      <footer><span>Sajad Hussain Malla · B.Tech CSE · CUSAT</span><span>Built with Next.js + Tailwind</span><a href="#hero" aria-label="Back to top"><ArrowRight size={18} className="footer-arrow" /></a></footer>
     </main>
   </>;
 }

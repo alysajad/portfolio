@@ -73,8 +73,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-description span { color: var(--color-muted); font-size: 12px; font-weight: 400; }
 .hero-portrait { width: 300px; position: relative; margin: 30px 10px 0 0; flex-shrink: 0; animation: portrait-enter .8s .2s ease both; }
 .portrait-orbit { position: absolute; width: 324px; height: 324px; border: 1px solid var(--color-dark); border-radius: 50%; top: -38px; left: -42px; z-index: -1; }
-.portrait-frame { overflow: hidden; border-radius: 0 0 20px 20px; }
+.portrait-frame { position: relative; overflow: hidden; border-radius: 0 0 20px 20px; }
 .portrait-frame img { display: block; width: 100%; height: auto; }
+.portrait-frame .portrait-color { height: 100%; object-fit: cover; opacity: 0; transition: opacity .4s ease; pointer-events: none; }
+:is(.hero-portrait, .about-portrait):hover .portrait-color { opacity: 1; }
 .winner-ribbon { position: absolute; right: -13px; bottom: 68px; color: var(--color-dark); background: var(--color-bg); border: 1px solid var(--color-dark); transform: rotate(-8deg); font-size: 22px; }
 .portrait-caption { display: flex; justify-content: space-between; font-size: 10px; font-weight: 500; padding: 13px 4px 0; }
 .portrait-caption span { font-family: var(--font-script), cursive; font-size: 18px; }
@@ -249,6 +251,52 @@ footer a:focus-visible { outline-color: var(--color-amber); }
 @keyframes portrait-enter { from { opacity: 0; } to { opacity: 1; } }
 @keyframes node-pulse { 0%, 100% { opacity: .3; transform: scale(.9); } 50% { opacity: .9; transform: scale(1.15); } }
 
+/* Reading position stays visible while the page keeps its natural scroll. */
+.scroll-controls { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 120; display: flex; align-items: center; gap: 12px; padding: 5px 7px 5px 18px; border: 1px solid var(--color-card); border-radius: 999px; background: var(--color-bg); box-shadow: 0 6px 24px rgb(26 26 26 / .12); white-space: nowrap; }
+.chapter-count { font: 11px var(--font-mono), monospace; }
+html:not([data-scroll-motion]) .scroll-controls { display: none; }
+.chapter-count > span { color: var(--color-muted); }
+.chapter-name { font-size: 11px; font-weight: 600; min-width: 88px; }
+.scroll-controls a, .scroll-controls button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; cursor: pointer; background: var(--color-amber); color: var(--color-dark); }
+.scroll-controls button { width: 44px; background: var(--color-card); }
+.scroll-controls button:disabled { cursor: default; color: var(--color-muted); }
+.scroll-controls :is(a, button):focus-visible { outline: 2px solid var(--color-dark); outline-offset: 3px; }
+.scroll-controls :is(a, button):hover:not(:disabled) { background: var(--color-dark); color: var(--color-white); }
+body:has(.scroll-controls) { padding-bottom: 86px; }
+html:has(.scroll-controls) { scroll-padding-bottom: 100px; }
+
+/* Native scroll timelines scrub in both directions; unsupported browsers keep the static layout. */
+@keyframes hero-type-away { to { transform: translateY(100px) scale(.96); } }
+@keyframes hero-portrait-away { to { transform: translateY(-65px) rotate(3deg); } }
+@keyframes doodles-away { to { transform: translateY(-110px); opacity: .25; } }
+@keyframes scroll-enter { from { transform: translateY(36px); } to { transform: none; } }
+@keyframes card-enter { from { transform: translateY(48px) scale(.97); } to { transform: none; } }
+@keyframes rule-draw { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes timeline-draw { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-scroll-motion="on"] .hero { view-timeline-name: --hero; view-timeline-axis: block; }
+    html[data-scroll-motion="on"] .hero-type { animation: hero-type-away linear both; animation-timeline: --hero; animation-range: exit 0% exit 100%; transform-origin: left center; }
+    html[data-scroll-motion="on"] .hero-portrait { animation: hero-portrait-away linear both; animation-timeline: --hero; animation-range: exit 0% exit 100%; }
+    html[data-scroll-motion="on"] .doodles { animation: doodles-away linear both; animation-timeline: --hero; animation-range: exit 0% exit 100%; }
+    html[data-scroll-motion="on"] :is(.scroll-reveal, .skill-group, .cert-row, .contact-card) { animation: scroll-enter linear both; animation-timeline: view(); animation-range: entry 0% entry 85%; }
+    html[data-scroll-motion="on"] :is(.reveal-card, .capability-card) { animation: card-enter linear both; animation-timeline: view(); animation-range: entry 0% entry 90%; }
+    html[data-scroll-motion="on"] .capability-card:nth-child(2) { animation-range-end: entry 105%; }
+    html[data-scroll-motion="on"] .capability-card:nth-child(3) { animation-range-end: entry 120%; }
+    html[data-scroll-motion="on"] .capability-card:nth-child(4) { animation-range-end: entry 135%; }
+    html[data-scroll-motion="on"] .section-rule { transform-origin: left; animation: rule-draw linear both; animation-timeline: view(); animation-range: entry 0% entry 20%; }
+    html[data-scroll-motion="on"] .timeline-content { view-timeline-name: --entry; view-timeline-axis: block; }
+    html[data-scroll-motion="on"] .timeline-content::before { content: ""; position: absolute; width: 2px; left: -2px; inset-block: 0; background: var(--color-amber); transform-origin: top; animation: timeline-draw linear both; animation-timeline: --entry; animation-range: entry 15% cover 65%; }
+    /* Keyboard navigation and direct links always expose a stable destination. */
+    html[data-scroll-motion="on"] :is(.scroll-reveal, .capability-card, .contact-card):focus-within,
+    html[data-scroll-motion="on"] .scroll-reveal:has(:target) { animation: none; }
+  }
+}
+
+html[data-scroll-motion="off"] { scroll-behavior: auto; }
+html[data-scroll-motion="off"] *, html[data-scroll-motion="off"] *::before, html[data-scroll-motion="off"] *::after { animation: none !important; transition: none !important; }
+
 @media (min-width: 1440px) { .hero-type h1 { font-size: 154px; } }
 @media (max-width: 1100px) {
   .page-shell { padding: 0 48px; }
@@ -324,6 +372,7 @@ footer a:focus-visible { outline-color: var(--color-amber); }
   footer > span:nth-child(2) { font-size: 8px; }
 }
 @media (max-width: 639px) {
+  .scroll-controls { gap: 8px; padding-left: 14px; bottom: max(12px, env(safe-area-inset-bottom)); }
   .page-shell { padding: 0 20px; }
   .section { padding: 36px 0 44px; }
   .section-header { margin-bottom: 28px; gap: 13px; }

@@ -7,12 +7,64 @@ const browser = await chromium.launch({
   ...(process.env.BROWSER_EXECUTABLE ? { executablePath: process.env.BROWSER_EXECUTABLE } : {}),
   args: ["--no-sandbox"],
 });
-const baseURL = process.env.TEST_BASE_URL || "http://127.0.0.1:3000";
+const baseURL = process.env.TEST_BASE_URL || "http://localhost:3000";
 const failures = [];
 let desktopContent;
 await mkdir("test-results", { recursive: true });
 
 try {
+  for (const width of [1440, 390]) {
+    const page = await browser.newPage({ viewport: { width, height: 900 }, reducedMotion: "no-preference" });
+    page.on("pageerror", error => failures.push(error.message));
+    await page.goto(baseURL, { waitUntil: "networkidle" });
+    await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on").catch(async error => {
+      console.error({ failures, state: await page.evaluate(() => ({ motion: document.documentElement.dataset.scrollMotion, reduced: matchMedia("(prefers-reduced-motion: reduce)").matches })) });
+      throw error;
+    });
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; });
+    const initialTransform = await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform);
+    await page.evaluate(() => window.scrollTo(0, 180));
+    await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero-type")).transform !== initial, initialTransform);
+    await page.screenshot({ path: `test-results/scroll-hero-${width}.png` });
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero-type")).transform === initial, initialTransform);
+    await page.locator("#projects").evaluate(element => window.scrollTo(0, element.offsetTop));
+    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "Selected work");
+    await page.screenshot({ path: `test-results/scroll-projects-${width}.png` });
+    await page.getByRole("link", { name: "Next: The toolkit", exact: true }).click();
+    await page.waitForURL("**/#skills");
+    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "The toolkit");
+    const toggle = page.getByRole("button", { name: "Disable animations", exact: true });
+    await toggle.click();
+    await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
+    assert.equal(await toggle.getAttribute("aria-pressed"), "true");
+    assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
+    await toggle.click();
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
+    assert.ok(await page.getByRole("button", { name: "Motion disabled by your device preference" }).isDisabled());
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on");
+    await page.locator("footer").evaluate(element => element.scrollIntoView());
+    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "Let’s build");
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    if (width === 1440) {
+      for (const selector of [".hero-portrait", ".about-portrait"]) {
+        const portrait = page.locator(selector);
+        const color = portrait.locator(".portrait-color");
+        await color.evaluate(image => image.decode());
+        assert.equal(await color.evaluate(image => getComputedStyle(image).opacity), "0");
+        await portrait.hover();
+        await page.waitForFunction(selector => getComputedStyle(document.querySelector(`${selector} .portrait-color`)).opacity === "1", selector);
+        await portrait.screenshot({ path: `test-results/hover-${selector.slice(1)}.png` });
+        await page.mouse.move(0, 0);
+        await page.waitForFunction(selector => getComputedStyle(document.querySelector(`${selector} .portrait-color`)).opacity === "0", selector);
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+    }
+    await page.close();
+    console.log(`${width}px: reversible scroll animation, chapter links, motion toggle, and live device preference checked`);
+  }
   for (const width of [1920, 1440, 1024, 820, 768, 640, 639, 480, 414, 390, 375, 320]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
     const page = await context.newPage();
@@ -22,7 +74,7 @@ try {
     await page.evaluate(() => document.fonts.ready);
     assert.equal(await page.locator("main > section").count(), 8);
     assert.equal(await page.locator("h1").count(), 1);
-    assert.equal(await page.locator(".portrait-frame img").count(), 2);
+    assert.equal(await page.locator(".portrait-frame").count(), 2);
     for (const portrait of await page.locator(".portrait-frame img").all()) {
       assert.ok(await portrait.isVisible(), `Portrait must remain visible at ${width}px`);
       await portrait.scrollIntoViewIfNeeded();
@@ -64,6 +116,7 @@ try {
   await noJsPage.goto(baseURL);
   assert.equal(await noJsPage.locator(".project-card").count(), 6);
   assert.ok(await noJsPage.locator("#projects-title").isVisible(), "Content remains visible without JavaScript");
+  assert.equal(await noJsPage.locator(".scroll-controls").isVisible(), false, "Interactive controls require JavaScript");
   await noJsPage.close();
   const keyboardPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   keyboardPage.on("pageerror", error => failures.push(error.message));
