@@ -1,9 +1,10 @@
 import Image from "next/image";
-import { ArrowDown, ArrowRight, ArrowUpRight, Braces, Check, ChevronRight, CircleDot, Clock3, Code2, Cpu, Database, Fingerprint, GitBranch, Github, Globe, Linkedin, Mail, MapPin, Network, Phone, Server, ShieldCheck, Terminal, Trophy, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Braces, Check, ChevronRight, CircleDot, Clock3, Code2, Cpu, Database, Fingerprint, GitBranch, Github, Globe, Linkedin, Mail, MapPin, Network, Phone, Server, ShieldCheck, Terminal, Trophy, type LucideIcon } from "lucide-react";
 import { certifications, experience, profile, projects, pursuing, skills } from "./content";
 import Reveal from "./reveal";
 import ScrollExperience from "./scroll-experience";
 import SkySketch from "./sky-sketch";
+import FooterDoodle from "./footer-doodle";
 
 const quickStack = ["Python", "FastAPI", "PostgreSQL", "Redis", "Next.js", "TypeScript", "Docker", "Linux", "Wazuh", "Kali Linux", "SQLAlchemy", "MongoDB"];
 const capabilities = [
@@ -97,7 +98,7 @@ export default function Home() {
 
       <section className="section contact" id="contact" aria-labelledby="contact-title">
         <SkySketch kind="flock" /><SectionHeader label="Let’s work together" next="hero" nextLabel="the top" /><div className="contact-intro"><Title id="contact-title">LET’S<br />BUILD<span className="amber">.</span></Title><div><ArrowUpRight className="contact-big-arrow" size={76} strokeWidth={1} aria-hidden="true" /><p>I’m open to backend engineering roles, security research collaborations, and hackathons. Based in Kochi, open to remote.</p></div></div><div className="contact-grid"><div className="contact-card"><ContactLink icon={Mail} href={`mailto:${profile.email}`}>{profile.email}</ContactLink><ContactLink icon={Phone} href="tel:+919103321565">{profile.phone}</ContactLink><p className="location"><MapPin size={18} />Kochi, Kerala, India</p></div><div className="contact-card"><ContactLink icon={Linkedin} href={profile.linkedin} external>LinkedIn</ContactLink><ContactLink icon={Github} href={profile.github} external>GitHub</ContactLink><ContactLink icon={Globe} href={profile.website} external>Portfolio</ContactLink></div></div><Ghost number="08" /></section>
-      <footer><span>Sajad Hussain Malla · B.Tech CSE · CUSAT</span><span>Built with Next.js + Tailwind</span><a href="#hero" aria-label="Back to top"><ArrowRight size={18} className="footer-arrow" /></a></footer>
+      <FooterDoodle />
     </main>
   </>;
 }

@@ -108,10 +108,24 @@ try {
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
     assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
     assert.equal(await flock.evaluate(element => getComputedStyle(element).transform), "none", "Distant birds stop moving with reduced motion");
+    assert.equal(await page.locator(".doodle-world").evaluate(element => getComputedStyle(element).animationName), "none", "Footer respects reduced motion");
     assert.ok(await page.locator(".sketch-plane-glide, .sketch-constellation-drift, .sketch-trail, .sketch-bug-crawl, .sketch-bug-legs, .sketch-kick-strip").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none")));
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on");
     await page.locator("footer").evaluate(element => element.scrollIntoView());
+    assert.equal(await page.getByText("Built with Next.js + Tailwind", { exact: true }).count(), 0);
+    const world = page.locator(".doodle-world");
+    const worldBefore = await world.evaluate(element => getComputedStyle(element).transform);
+    await page.waitForFunction(before => getComputedStyle(document.querySelector(".doodle-world")).transform !== before, worldBefore);
+    await page.getByRole("button", { name: "Pause footer animation", exact: true }).click();
+    await page.waitForFunction(() => document.querySelector(".doodle-footer").dataset.paused === "true");
+    await page.waitForTimeout(50);
+    const pausedWorld = await world.evaluate(element => getComputedStyle(element).transform);
+    await page.waitForTimeout(150);
+    assert.equal(await world.evaluate(element => getComputedStyle(element).transform), pausedWorld, "Pause freezes the scene");
+    await page.locator("footer").screenshot({ path: `test-results/footer-doodle-${width}.png` });
+    await page.getByRole("button", { name: "Resume footer animation", exact: true }).click();
+    await page.waitForFunction(before => getComputedStyle(document.querySelector(".doodle-world")).transform !== before, pausedWorld);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     if (width === 1440) {
       for (const selector of [".hero-portrait", ".about-portrait"]) {
