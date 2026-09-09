@@ -251,20 +251,6 @@ footer a:focus-visible { outline-color: var(--color-amber); }
 @keyframes portrait-enter { from { opacity: 0; } to { opacity: 1; } }
 @keyframes node-pulse { 0%, 100% { opacity: .3; transform: scale(.9); } 50% { opacity: .9; transform: scale(1.15); } }
 
-/* Reading position stays visible while the page keeps its natural scroll. */
-.scroll-controls { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 120; display: flex; align-items: center; gap: 12px; padding: 5px 7px 5px 18px; border: 1px solid var(--color-card); border-radius: 999px; background: var(--color-bg); box-shadow: 0 6px 24px rgb(26 26 26 / .12); white-space: nowrap; }
-.chapter-count { font: 11px var(--font-mono), monospace; }
-html:not([data-scroll-motion]) .scroll-controls { display: none; }
-.chapter-count > span { color: var(--color-muted); }
-.chapter-name { font-size: 11px; font-weight: 600; min-width: 88px; }
-.scroll-controls a, .scroll-controls button { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; cursor: pointer; background: var(--color-amber); color: var(--color-dark); }
-.scroll-controls button { width: 44px; background: var(--color-card); }
-.scroll-controls button:disabled { cursor: default; color: var(--color-muted); }
-.scroll-controls :is(a, button):focus-visible { outline: 2px solid var(--color-dark); outline-offset: 3px; }
-.scroll-controls :is(a, button):hover:not(:disabled) { background: var(--color-dark); color: var(--color-white); }
-body:has(.scroll-controls) { padding-bottom: 86px; }
-html:has(.scroll-controls) { scroll-padding-bottom: 100px; }
-
 /* Native scroll timelines scrub in both directions; unsupported browsers keep the static layout. */
 @keyframes hero-type-away { to { transform: translateY(100px) scale(.96); } }
 @keyframes hero-portrait-away { to { transform: translateY(-65px) rotate(3deg); } }
@@ -372,7 +358,6 @@ html[data-scroll-motion="off"] *, html[data-scroll-motion="off"] *::before, html
   footer > span:nth-child(2) { font-size: 8px; }
 }
 @media (max-width: 639px) {
-  .scroll-controls { gap: 8px; padding-left: 14px; bottom: max(12px, env(safe-area-inset-bottom)); }
   .page-shell { padding: 0 20px; }
   .section { padding: 36px 0 44px; }
   .section-header { margin-bottom: 28px; gap: 13px; }

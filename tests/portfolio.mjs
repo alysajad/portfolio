@@ -29,24 +29,14 @@ try {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero-type")).transform === initial, initialTransform);
     await page.locator("#projects").evaluate(element => window.scrollTo(0, element.offsetTop));
-    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "Selected work");
+    assert.equal(await page.locator(".scroll-controls").count(), 0, "Floating scroller is removed");
     await page.screenshot({ path: `test-results/scroll-projects-${width}.png` });
-    await page.getByRole("link", { name: "Next: The toolkit", exact: true }).click();
-    await page.waitForURL("**/#skills");
-    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "The toolkit");
-    const toggle = page.getByRole("button", { name: "Disable animations", exact: true });
-    await toggle.click();
-    await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
-    assert.equal(await toggle.getAttribute("aria-pressed"), "true");
-    assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
-    await toggle.click();
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
-    assert.ok(await page.getByRole("button", { name: "Motion disabled by your device preference" }).isDisabled());
+    assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on");
     await page.locator("footer").evaluate(element => element.scrollIntoView());
-    await page.waitForFunction(() => document.querySelector(".chapter-name").textContent === "Let’s build");
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     if (width === 1440) {
       for (const selector of [".hero-portrait", ".about-portrait"]) {
@@ -63,7 +53,7 @@ try {
       await page.evaluate(() => window.scrollTo(0, 0));
     }
     await page.close();
-    console.log(`${width}px: reversible scroll animation, chapter links, motion toggle, and live device preference checked`);
+    console.log(`${width}px: reversible scroll animation, removed scroller, and live device preference checked`);
   }
   for (const width of [1920, 1440, 1024, 820, 768, 640, 639, 480, 414, 390, 375, 320]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, reducedMotion: "reduce" });
@@ -116,7 +106,7 @@ try {
   await noJsPage.goto(baseURL);
   assert.equal(await noJsPage.locator(".project-card").count(), 6);
   assert.ok(await noJsPage.locator("#projects-title").isVisible(), "Content remains visible without JavaScript");
-  assert.equal(await noJsPage.locator(".scroll-controls").isVisible(), false, "Interactive controls require JavaScript");
+  assert.equal(await noJsPage.locator(".scroll-controls").isVisible(), false, "Floating scroller stays removed without JavaScript");
   await noJsPage.close();
   const keyboardPage = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   keyboardPage.on("pageerror", error => failures.push(error.message));
