@@ -23,17 +23,61 @@ try {
     });
     await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; });
     const initialTransform = await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform);
+    const flock = page.locator(".hero .sketch-near");
+    const initialFlock = await flock.evaluate(element => getComputedStyle(element).transform);
+    assert.equal(await page.locator('.section-sketch[aria-hidden="true"]').count(), 11);
+    assert.equal(await page.locator(".section-sketch").first().evaluate(element => getComputedStyle(element).pointerEvents), "none");
     await page.evaluate(() => window.scrollTo(0, 180));
     await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero-type")).transform !== initial, initialTransform);
+    await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero .sketch-near")).transform !== initial, initialFlock);
     await page.screenshot({ path: `test-results/scroll-hero-${width}.png` });
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero-type")).transform === initial, initialTransform);
+    await page.waitForFunction(initial => getComputedStyle(document.querySelector(".hero .sketch-near")).transform === initial, initialFlock);
     await page.locator("#projects").evaluate(element => window.scrollTo(0, element.offsetTop));
     assert.equal(await page.locator(".scroll-controls").count(), 0, "Floating scroller is removed");
     await page.screenshot({ path: `test-results/scroll-projects-${width}.png` });
+    for (const selector of [".about .sketch-plane-glide", ".capabilities .sketch-plane-glide", ".sketch-constellation-drift", ".sketch-bug-crawl", ".sketch-ball-roll"]) {
+      const sketch = page.locator(selector);
+      await sketch.evaluate(element => window.scrollTo(0, element.closest(".section-sketch").getBoundingClientRect().top + scrollY - innerHeight * .65));
+      await page.waitForTimeout(100);
+      const before = await sketch.evaluate(element => getComputedStyle(element).transform);
+      const beforeLeft = await sketch.evaluate(element => element.getBoundingClientRect().left);
+      await page.evaluate(() => window.scrollBy(0, 160));
+      await page.waitForFunction(({ selector, before }) => getComputedStyle(document.querySelector(selector)).transform !== before, { selector, before });
+      if (selector.includes("plane")) {
+        const distance = await sketch.evaluate(element => element.getBoundingClientRect().left) - beforeLeft;
+        assert.ok(distance >= 15, `Plane must visibly fly during a short scroll, moved ${distance}px at ${width}px`);
+      }
+      if (selector === ".sketch-bug-crawl" || selector === ".sketch-ball-roll") {
+        const gap = await sketch.evaluate(element => ({
+          sketchTop: element.getBoundingClientRect().top,
+          contentBottom: element.closest("section").querySelector(".project-grid, .community").getBoundingClientRect().bottom,
+          left: element.getBoundingClientRect().left,
+        }));
+        assert.ok(gap.sketchTop > gap.contentBottom, `${selector} stays below content at ${width}px`);
+        assert.ok(gap.left - beforeLeft >= 8, `${selector} visibly moves at ${width}px`);
+        await page.screenshot({ path: `test-results/${selector.slice(1)}-gap-${width}.png` });
+      }
+      await page.evaluate(() => window.scrollBy(0, -160));
+      await page.waitForFunction(({ selector, before }) => getComputedStyle(document.querySelector(selector)).transform === before, { selector, before });
+      if (selector.startsWith(".about")) {
+        const gap = await sketch.evaluate(element => {
+          const plane = element.getBoundingClientRect();
+          const hero = document.querySelector(".hero-bottom").getBoundingClientRect();
+          const header = document.querySelector(".about .section-header").getBoundingClientRect();
+          return { planeTop: plane.top, planeBottom: plane.bottom, heroBottom: hero.bottom, divider: header.top + header.height / 2 };
+        });
+        assert.ok(gap.planeTop > gap.heroBottom && gap.planeBottom < gap.divider - 5, `Plane stays in the gap: ${JSON.stringify(gap)}`);
+        await page.screenshot({ path: `test-results/about-plane-gap-${width}.png` });
+      }
+      await sketch.locator("xpath=ancestor::section").screenshot({ path: `test-results/${selector.replaceAll(/[. ]/g, "")}-${width}.png` });
+    }
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
     assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
+    assert.equal(await flock.evaluate(element => getComputedStyle(element).transform), "none", "Distant birds stop moving with reduced motion");
+    assert.ok(await page.locator(".sketch-plane-glide, .sketch-constellation-drift, .sketch-trail, .sketch-bug-crawl, .sketch-bug-legs, .sketch-ball-roll").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none")));
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on");
     await page.locator("footer").evaluate(element => element.scrollIntoView());
