@@ -1,3 +1,13 @@
+// Six hand-drawn poses: ready, plant, wind-up, contact, follow-through, finish.
+const kickFrames = [
+  { head: [116, 38], shirt: "M108 52L124 55 120 84 104 82Z", arms: "M108 57L96 72 85 75M124 59L135 74 146 71", legs: "M109 88L108 115 102 143 115 143M118 88L133 111 144 140 155 140", ball: [180, 132, 0] },
+  { head: [120, 40], shirt: "M112 54L126 57 117 87 102 82Z", arms: "M112 59L99 69 88 65M125 61L138 73 147 67", legs: "M109 90L113 115 109 143 122 143M116 91L102 112 81 108 78 112", ball: [180, 132, 0] },
+  { head: [123, 39], shirt: "M116 53L129 58 119 88 104 83Z", arms: "M115 58L101 65 91 55M128 62L138 80 153 79", legs: "M111 91L119 117 113 143 126 143M119 91L104 108 88 100 81 103", ball: [180, 132, 0] },
+  { head: [120, 36], shirt: "M110 50L125 54 126 85 108 84Z", arms: "M111 55L95 65 83 59M125 58L138 68 150 57", legs: "M114 91L114 115 108 143 121 143M123 90L141 108 156 129 168 130", ball: [180, 132, 0] },
+  { head: [111, 34], shirt: "M102 49L118 51 125 82 108 85Z", arms: "M104 53L90 65 79 59M118 55L133 60 143 49", legs: "M111 90L114 115 111 143 124 143M123 87L148 91 169 86 174 91", ball: [231, 104, 65] },
+  { head: [111, 36], shirt: "M102 51L119 53 122 83 107 85Z", arms: "M104 56L92 72 82 68M120 58L136 65 148 57", legs: "M111 90L108 116 111 143 124 143M122 89L146 101 165 96 170 101", ball: [304, 75, 150] },
+];
+
 // Inline ink drawings stay visible without JavaScript; CSS ties their motion to each section.
 export default function SkySketch({ kind = "flock" }: { kind?: "flock" | "breeze" | "orbit" | "plane" | "constellation" | "bug" | "football" }) {
   return <div className={`section-sketch sketch-${kind}`} aria-hidden="true">
@@ -53,13 +63,24 @@ export default function SkySketch({ kind = "flock" }: { kind?: "flock" | "breeze
           <path d="M168 89L173 93M192 104L187 108" stroke="var(--color-amber)" strokeWidth="2.5" />
           <circle cx="175" cy="71" r="1" fill="currentColor" /><circle cx="185" cy="71" r="1" fill="currentColor" />
         </g>
-      </g> : kind === "football" ? <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M64 122Q83 120 99 122M83 129L112 129M243 127L278 127" opacity=".22" />
-        <g className="sketch-ball-roll">
-          <circle cx="180" cy="91" r="31" />
-          <path d="M180 77L194 87 188 103 172 103 166 87Z" fill="var(--color-amber)" fillOpacity=".3" />
-          <path d="M180 77V64M194 87L208 81M188 103L198 116M172 103L162 116M166 87L152 81M168 63L180 67 192 63M207 77L205 89 210 99M202 113L190 114 183 122M177 122L170 114 158 113M150 99L155 89 153 77" />
-        </g>
+      </g> : kind === "football" ? <g className="sketch-kick-strip" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        {kickFrames.map(({ head, shirt, arms, legs, ball }, index) => <g className="kick-frame" key={index} transform={`translate(${index * 360} 0)`}>
+          <path d="M73 148Q126 145 197 147M213 147L232 147M263 147L288 147" opacity=".22" />
+          <g className="kick-player">
+            <circle cx={head[0]} cy={head[1]} r="9" />
+            <path d={`M${head[0] - 8} ${head[1] - 3}q8-11 16 0M${head[0] + 3} ${head[1]}h1`} />
+            <path d={arms} />
+            <path d={shirt} fill="var(--color-amber)" fillOpacity=".22" />
+            <path d={legs} strokeWidth="2.2" />
+            <path d="M106 84L122 86 126 94 117 97 111 92 104 94Z" fill="var(--color-bg)" />
+          </g>
+          <g className="kick-ball" transform={`translate(${ball[0]} ${ball[1]}) rotate(${ball[2]})`} strokeWidth="1.2">
+            <circle r="12" />
+            <path d="M0-6L6-2 4 5H-4L-6-2ZM0-6V-12M6-2L11-5M4 5L7 10M-4 5L-7 10M-6-2L-11-5" />
+          </g>
+          {index === 3 && <path d="M191 119L196 114M196 132H204M191 145L196 150" stroke="var(--color-amber)" />}
+          {index > 3 && <path d={`M${ball[0] - 33} ${ball[1] + 8}l14-5m-19 12 10-3`} opacity=".35" />}
+        </g>)}
       </g> : <g className="sketch-orbit-turn" stroke="currentColor" strokeWidth=".85">
         <ellipse cx="180" cy="90" rx="94" ry="35" transform="rotate(-27 180 90)" />
         <ellipse cx="180" cy="90" rx="88" ry="38" transform="rotate(-32 180 90)" opacity=".35" />

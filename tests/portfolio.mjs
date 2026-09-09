@@ -37,7 +37,7 @@ try {
     await page.locator("#projects").evaluate(element => window.scrollTo(0, element.offsetTop));
     assert.equal(await page.locator(".scroll-controls").count(), 0, "Floating scroller is removed");
     await page.screenshot({ path: `test-results/scroll-projects-${width}.png` });
-    for (const selector of [".about .sketch-plane-glide", ".capabilities .sketch-plane-glide", ".sketch-constellation-drift", ".sketch-bug-crawl", ".sketch-ball-roll"]) {
+    for (const selector of [".about .sketch-plane-glide", ".capabilities .sketch-plane-glide", ".sketch-constellation-drift", ".sketch-bug-crawl"]) {
       const sketch = page.locator(selector);
       await sketch.evaluate(element => window.scrollTo(0, element.closest(".section-sketch").getBoundingClientRect().top + scrollY - innerHeight * .65));
       await page.waitForTimeout(100);
@@ -49,7 +49,7 @@ try {
         const distance = await sketch.evaluate(element => element.getBoundingClientRect().left) - beforeLeft;
         assert.ok(distance >= 15, `Plane must visibly fly during a short scroll, moved ${distance}px at ${width}px`);
       }
-      if (selector === ".sketch-bug-crawl" || selector === ".sketch-ball-roll") {
+      if (selector === ".sketch-bug-crawl") {
         const gap = await sketch.evaluate(element => ({
           sketchTop: element.getBoundingClientRect().top,
           contentBottom: element.closest("section").querySelector(".project-grid, .community").getBoundingClientRect().bottom,
@@ -73,11 +73,42 @@ try {
       }
       await sketch.locator("xpath=ancestor::section").screenshot({ path: `test-results/${selector.replaceAll(/[. ]/g, "")}-${width}.png` });
     }
+    const kick = page.locator(".sketch-football");
+    const ballPositions = [];
+    for (const frame of [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]) {
+      await kick.evaluate((element, frame) => {
+        const bounds = element.getBoundingClientRect();
+        window.scrollTo(0, bounds.top + scrollY - innerHeight + (innerHeight + bounds.height) * (.23 + frame * .125));
+      }, frame);
+      await page.waitForTimeout(100);
+      const state = await kick.evaluate((element, frame) => {
+        const strip = element.querySelector(".sketch-kick-strip");
+        const active = element.querySelectorAll(".kick-frame")[frame];
+        const ball = active.querySelector(".kick-ball").getBoundingClientRect();
+        const scene = element.getBoundingClientRect();
+        return {
+          frame: Math.abs(Math.round(new DOMMatrixReadOnly(getComputedStyle(strip).transform).m41 / 360)),
+          ballX: (ball.left + ball.right) / 2 - scene.left,
+          ballY: (ball.top + ball.bottom) / 2 - scene.top,
+          clear: scene.top > document.querySelector(".community").getBoundingClientRect().bottom,
+        };
+      }, frame);
+      assert.equal(state.frame, frame, `Kick pose ${frame} at ${width}px`);
+      assert.ok(state.clear, "The entire kick scene stays below the biography");
+      if (ballPositions.length < 6) {
+        ballPositions.push(state);
+        await kick.screenshot({ path: `test-results/kick-${width}-frame-${frame}.png` });
+      }
+    }
+    for (const state of ballPositions.slice(1, 4)) {
+      assert.ok(Math.abs(state.ballX - ballPositions[0].ballX) < 1 && Math.abs(state.ballY - ballPositions[0].ballY) < 1, "Ball stays planted until contact");
+    }
+    assert.ok(ballPositions[4].ballX > ballPositions[3].ballX + 20 && ballPositions[5].ballX > ballPositions[4].ballX + 20, "Ball flies away after contact");
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "off");
     assert.equal(await page.locator(".hero-type").evaluate(element => getComputedStyle(element).transform), "none");
     assert.equal(await flock.evaluate(element => getComputedStyle(element).transform), "none", "Distant birds stop moving with reduced motion");
-    assert.ok(await page.locator(".sketch-plane-glide, .sketch-constellation-drift, .sketch-trail, .sketch-bug-crawl, .sketch-bug-legs, .sketch-ball-roll").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none")));
+    assert.ok(await page.locator(".sketch-plane-glide, .sketch-constellation-drift, .sketch-trail, .sketch-bug-crawl, .sketch-bug-legs, .sketch-kick-strip").evaluateAll(elements => elements.every(element => getComputedStyle(element).animationName === "none")));
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.waitForFunction(() => document.documentElement.dataset.scrollMotion === "on");
     await page.locator("footer").evaluate(element => element.scrollIntoView());

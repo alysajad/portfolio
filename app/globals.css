@@ -272,6 +272,9 @@ footer a:focus-visible { outline-color: var(--color-amber); }
 .capabilities .section-sketch { top: auto; bottom: -6px; right: 8%; width: 280px; height: 140px; }
 .certifications .section-sketch { top: 155px; right: 10%; width: 250px; height: 125px; }
 .section.projects .sketch-bug, .section.experience .sketch-football { top: auto; bottom: -6px; right: 6%; width: 240px; height: 120px; opacity: .5; }
+.section.experience { padding-bottom: 176px; }
+.section.experience .sketch-football { width: min(100%, 320px); height: auto; aspect-ratio: 2; bottom: -4px; opacity: .65; }
+.sketch-football svg { overflow: hidden; }
 
 /* Native scroll timelines scrub in both directions; unsupported browsers keep the static layout. */
 @keyframes flock-near { from { transform: translate(-40px, 24px); } to { transform: translate(95px, -42px); } }
@@ -288,7 +291,8 @@ footer a:focus-visible { outline-color: var(--color-amber); }
 @keyframes sketch-trace-draw { from { stroke-dashoffset: .15; } to { stroke-dashoffset: 0; } }
 @keyframes bug-crawl { from { transform: translateX(-60px) rotate(-8deg); } to { transform: translateX(60px) rotate(8deg); } }
 @keyframes bug-steps { 0%, 25%, 50%, 75%, 100% { transform: skewY(-7deg); } 12.5%, 37.5%, 62.5%, 87.5% { transform: skewY(7deg); } }
-@keyframes ball-roll { from { transform: translate(-60px, 0) rotate(-95deg); } 50% { transform: translate(0, -9px) rotate(15deg); } to { transform: translate(60px, 0) rotate(125deg); } }
+/* Each 360-unit cell is a complete drawing; steps keep poses and ball contact in sync. */
+@keyframes football-kick { to { transform: translateX(-1800px); } }
 @keyframes hero-type-away { to { transform: translateY(100px) scale(.96); } }
 @keyframes hero-portrait-away { to { transform: translateY(-65px) rotate(3deg); } }
 @keyframes doodles-away { to { transform: translateY(-110px); opacity: .25; } }
@@ -311,10 +315,10 @@ footer a:focus-visible { outline-color: var(--color-amber); }
     html[data-scroll-motion="on"] .sketch-plane { view-timeline-name: --plane-flight; }
     html[data-scroll-motion="on"] .section-sketch.sketch-plane .sketch-plane-glide { animation-timeline: --plane-flight; animation-range: cover 15% cover 85%; }
     html[data-scroll-motion="on"] :is(.sketch-bug, .sketch-football) { view-timeline-name: --playful-sketch; }
-    html[data-scroll-motion="on"] :is(.sketch-bug-crawl, .sketch-bug-legs, .sketch-ball-roll) { animation: var(--sketch-animation) linear both; animation-timeline: --playful-sketch; animation-range: cover 10% cover 90%; transform-origin: 180px 99px; }
+    html[data-scroll-motion="on"] :is(.sketch-bug-crawl, .sketch-bug-legs) { animation: var(--sketch-animation) linear both; animation-timeline: --playful-sketch; animation-range: cover 10% cover 90%; transform-origin: 180px 99px; }
     .sketch-bug-crawl { --sketch-animation: bug-crawl; }
     .sketch-bug-legs { --sketch-animation: bug-steps; }
-    html[data-scroll-motion="on"] .sketch-ball-roll { --sketch-animation: ball-roll; transform-origin: 180px 91px; }
+    html[data-scroll-motion="on"] .sketch-kick-strip { animation: football-kick steps(5, end) both; animation-timeline: --playful-sketch; animation-range: cover 20% cover 80%; }
     .sketch-constellation-drift { --sketch-animation: constellation-drift; transform-origin: 180px 90px; }
     .sketch-trail { --sketch-animation: sketch-trace-draw; }
     html[data-scroll-motion="on"] .hero { view-timeline-name: --hero, --sketch; view-timeline-axis: block; }
@@ -426,6 +430,8 @@ html[data-scroll-motion="off"] *, html[data-scroll-motion="off"] *::before, html
   .section { padding: 36px 0 44px; }
   .section:is(.capabilities, .projects, .experience) { padding-bottom: 96px; }
   .section.projects .sketch-bug, .section.experience .sketch-football { width: 200px; height: 100px; bottom: -8px; right: 2%; }
+  .section.experience { padding-bottom: 156px; }
+  .section.experience .sketch-football { width: min(100%, 280px); height: auto; bottom: -4px; right: 0; }
   .section-header { margin-bottom: 28px; gap: 13px; }
   .section-header > span:first-child { font-size: 10px; }
   .ghost-number { font-size: 230px; left: -17px; bottom: -24px; }
