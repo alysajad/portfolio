@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #f0ede8;
+  --color-bg: #efebe5;
   --color-amber: #f5a623;
   --color-dark: #1a1a1a;
-  --color-card: #e8e4de;
-  --color-muted: #6b6b6b;
+  --color-card: #e7e1d9;
+  --color-muted: #626262;
   --color-white: #ffffff;
   --space-xs: 4px;
   --space-sm: 8px;
@@ -33,7 +33,7 @@ p, h1, h2, h3, h4 { margin: 0; }
 svg { flex-shrink: 0; }
 button, a { -webkit-tap-highlight-color: transparent; }
 .amber { color: var(--color-amber); }
-.page-shell { max-width: 1328px; margin: 0 auto; padding: 0 64px; }
+.page-shell { position: relative; max-width: 1328px; margin: 0 auto; padding: 0 64px; }
 .section { position: relative; isolation: isolate; padding: 88px 0 96px; }
 .section > :not(.ghost-number):not(.section-sketch) { position: relative; z-index: 1; }
 .ghost-number { position: absolute; bottom: -35px; left: -50px; font-family: var(--font-display), sans-serif; font-size: 310px; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--color-dark); opacity: .075; user-select: none; pointer-events: none; z-index: -1; }
@@ -50,6 +50,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .ribbon-label { display: inline-block; color: var(--color-dark); background: var(--color-amber); font-family: var(--font-script), cursive; font-size: 22px; font-weight: 700; line-height: 1.15; padding: 4px 16px 6px; border-radius: 8px; transform: rotate(-2deg); }
 .skip-link { position: fixed; left: 20px; top: -100px; z-index: 200; background: var(--color-dark); color: var(--color-white); padding: 12px 20px; }
 .skip-link:focus { top: 16px; outline-color: var(--color-amber); }
+.winter-snow { position: fixed; inset: 0; overflow: hidden; pointer-events: none; user-select: none; z-index: 0; }
+.winter-snow::before { content: ""; position: absolute; inset: 0; background: transparent; }
+.winter-snow span { position: absolute; top: var(--flake-y); left: var(--flake-x); width: var(--flake-size); height: var(--flake-size); border-radius: 50%; background: rgb(255 255 255 / .86); box-shadow: 0 0 0 1px rgb(26 26 26 / .035), 0 0 14px rgb(255 255 255 / .72); opacity: .58; animation: snow-fall var(--flake-duration) linear infinite; animation-delay: var(--flake-delay); }
 
 /* Opening spread: oversized type and an editorial portrait, as in the supplied reference. */
 .hero { padding-top: 28px; padding-bottom: 36px; min-height: 722px; }
@@ -265,6 +268,7 @@ html[data-scroll-motion="off"] .doodle-pause { display: none; }
 @keyframes ribbon-enter { from { opacity: 0; transform: rotate(-2deg) scale(.8); } to { opacity: 1; transform: rotate(-2deg) scale(1); } }
 @keyframes portrait-enter { from { opacity: 0; } to { opacity: 1; } }
 @keyframes node-pulse { 0%, 100% { opacity: .3; transform: scale(.9); } 50% { opacity: .9; transform: scale(1.15); } }
+@keyframes snow-fall { from { transform: translate3d(0, -16vh, 0); } to { transform: translate3d(var(--flake-drift), 116vh, 0); } }
 
 /* Small ink drawings live in the whitespace, behind the content. */
 .section-sketch { position: absolute; z-index: 0; pointer-events: none; user-select: none; width: 300px; height: 150px; right: 3%; top: 135px; color: var(--color-dark); }

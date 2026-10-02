@@ -5,6 +5,7 @@ import Reveal from "./reveal";
 import ScrollExperience from "./scroll-experience";
 import SkySketch from "./sky-sketch";
 import FooterDoodle from "./footer-doodle";
+import Snowfall from "./snowfall";
 
 const quickStack = ["Python", "FastAPI", "PostgreSQL", "Redis", "Next.js", "TypeScript", "Docker", "Linux", "Wazuh", "Kali Linux", "SQLAlchemy", "MongoDB"];
 const capabilities = [
@@ -44,6 +45,7 @@ export default function Home() {
     <ScrollExperience />
     <aside className="vertical-label" aria-hidden="true">SAJAD ©</aside>
     <main className="page-shell">
+      <Snowfall />
       <section className="hero section" id="hero" aria-labelledby="hero-title">
         <SkySketch kind="flock" />
         <div className="hero-top"><a href="#hero" className="brand-mark" aria-label="Sajad Hussain Malla home"><span /><span /></a><span className="eyebrow">BACKEND / SECURITY / AI</span><span className="hero-year">PORTFOLIO</span></div>
